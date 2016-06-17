@@ -1,4 +1,5 @@
 (function() {
+
   // rAF
   window.requestAnimationFrame = function() {
     return window.requestAnimationFrame ||
@@ -11,11 +12,21 @@
       }
   }();
 
+  // cAF
+  window.cancelAnimationFrame = function() {
+    return window.cancelAnimationFrame ||
+      window.webkitCancelAnimationFrame ||
+      window.mozCancelAnimationFrame ||
+      window.msCancelAnimationFrame ||
+      window.oCancelAnimationFrame ||
+      function(f) {
+        window.setTimeout(f,1e3/60);
+      }
+  }();
 
-  window.mit = window.mit || {};
 
   var config = mit.config = {
-    fork_count: 6
+
   };
 
   var ui = mit.ui = {
@@ -38,6 +49,11 @@
 
   var W = canvas.width = ui.body.width();
   var H = canvas.height = ui.body.height();
+
+  // Music
+  var music = document.getElementById("start");
+  music.volume = 0.2;
+  music.play();
 
   // Width x Height capped to 1000 x 500
   if (canvas.width > 1000) {
@@ -74,32 +90,57 @@
   ui.start_screen.css('height', canvas.height + 'px');
 
   // Start Button
-  ui.start_game.on('mousedown', function() {
+  var startGame = function() {
+    // Hide the Start Screen
     ui.start_screen.fadeOut();
 
+    // Start btn has been clicked
+    // Game hasnt started. Game will
+    // start on flight.
     mit.start_btn_clicked = 1;
     mit.game_started = 0;
 
-    mit.pappu.drawStatic(ctx);
+    mit.Backgrounds.common_bg_speed = 1;
+    mit.Backgrounds.ground_bg_move_speed = 9;
+
+    // Reset all accelerations and make
+    // pappu stationary
+    mit.Pappu.drawStatic(ctx);
     mit.ax = 0; mit.ay = 0;
     mit.vx = 0; mit.vy = 0;
+
+    // reset score
+    mit.score = 0;
+
+    // Nuke all forks
+    mit.ForkUtils.forks = [];
+    // Nuke all branches
+    mit.BranchUtils.branches = [];
+    // Nuke all collectibles
+    mit.CollectibleUtils.collecs = [];
+  };
+
+  ui.start_game.on('mousedown', function() {
+    startGame();
 
     return false;
   });
 
+  // startGame();
 
-  var score = 0;
+  // Score Board
+  mit.score = 0;
 
   ui.score_board.css('width', canvas.width + 'px');
   ui.score_board.css('height', canvas.height + 'px');
 
 
   // Set Canvas Width/Height in Config
-  mit.config.canvas_width = W;
-  mit.config.canvas_height = H;
+  mit.config.canvas_width = mit.W = W;
+  mit.config.canvas_height = mit.H = H;
 
   // Gravity
-  mit.gravity = 0.5;
+  mit.gravity = 0.7;
 
   // Velocity x,y
   mit.vx = 0;
@@ -110,52 +151,14 @@
   //
   // You can console.log velocities in drawing methods
   // and from there decide what to set as the cap.
-  var v_cap = 7;
+  mit.v_cap = 7.5;
 
   // Accelaration x,y
   mit.ax = 0;
   mit.ay = 0;
 
   // Flying up ?
-  var flying_up = 0;
-
-
-  // Key Events
-  window.addEventListener('keydown', function(e) {
-    if (!mit.start_btn_clicked)
-      return;
-
-    switch (e.keyCode) {
-      // Left
-      //case 37:
-      //  mit.ax = -0.4;
-      //  break;
-
-      // Right
-      //case 39:
-      //  mit.ax = 0.4;
-      //  break;
-
-      // Up
-      case 38:
-        mit.ay = -1.0;
-        break;
-
-      // Down
-      case 40:
-        mit.ay = 1.0;
-        break;
-    }
-
-  }, false);
-
-  window.addEventListener('keyup', function(e) {
-    if (!mit.start_btn_clicked)
-      return;
-
-    mit.ax = 0;
-    mit.ay = 0;
-  }, false);
+  mit.flying_up = 0;
 
   // Game play on mouse clicks too!
   window.addEventListener('mousedown', function(e) {
@@ -165,8 +168,8 @@
     if (!mit.game_started)
       mit.game_started = 1;
 
-    mit.ay = -1.0;
-    flying_up = 1;
+    mit.ay = -1.5;
+    mit.flying_up = 1;
   }, false);
 
   window.addEventListener('mouseup', function(e) {
@@ -174,7 +177,28 @@
       return;
 
     mit.ay = 0;
-    flying_up = 0;
+    mit.flying_up = 0;
+  }, false);
+
+
+  // Game play on touch too!
+  window.addEventListener('touchstart', function(e) {
+    if (!mit.start_btn_clicked)
+      return;
+
+    if (!mit.game_started)
+      mit.game_started = 1;
+
+    mit.ay = -1.5;
+    mit.flying_up = 1;
+  }, false);
+
+  window.addEventListener('touchend', function(e) {
+    if (!mit.start_btn_clicked)
+      return;
+
+    mit.ay = 0;
+    mit.flying_up = 0;
   }, false);
 
 
@@ -187,8 +211,18 @@
     ui.tweet.html('tweet score');
     ui.fb.html('post on fb');
 
+    // Stop background
+    mit.Backgrounds.common_bg_speed = 0;
+    mit.Backgrounds.ground_bg_move_speed = 0;
+
     mit.game_over = 1;
     mit.start_btn_clicked = 0;
+
+    // Pappu if invincible will be no morez
+    mit.Pappu.invincible = 0;
+
+    // Nuke all clones
+    mit.Pappu.clones.length = 0;
   };
 
 
@@ -196,74 +230,92 @@
     window.requestAnimationFrame(renderGame);
 
     // Draw Backgrounds on BG Canvas
-    mit.backgrounds.draw(bg_ctx);
+    mit.Backgrounds.draw(bg_ctx);
 
     ctx.clearRect(0, 0, W, H);
 
     // Draw Digs (holds forks)
     // I am fine without Digs, but Kushagra
     // just WANTS me to do this extra work :/
-    mit.forks.drawDigs(ctx);
+    mit.ForkUtils.drawDigs(ctx);
 
     // Draw Grass on Main Canvas
-    mit.backgrounds.drawGrass(ctx);
+    mit.Backgrounds.drawGrass(ctx);
 
-    if (flying_up)
-      mit.pappu.updateFlyFrameCount();
+    if (mit.flying_up || !mit.game_started)
+      mit.Pappu.updateFlyFrameCount();
     else
-      mit.pappu.updateFlyFrameCount(0);
+      mit.Pappu.updateFlyFrameCount(0);
 
 
     // Game over on reaching any boundary
-    if (mit.pappu.hasReachedBoundary(W, H)) {
+    if (mit.Pappu.hasReachedBoundary(W, H)) {
       // Performing some game over tasks
       mit.gameOver();
       return;
     }
 
-    //mit.forks.draw(ctx, 6);
-    //mit.branches.draw(ctx, 4);
+    //mit.ForkUtils.draw(ctx);
+    //mit.BranchUtils.draw(ctx);
 
-    //mit.forks.checkCollision();
+    //mit.ForkUtils.checkCollision();
+
+    // Send over Pakias (Enemies)
+    // mit.PakiaUtils.render(ctx);
+
+    // Collectibles
+    // mit.CollectibleUtils.draw(ctx);
+
+    // mit.Pappu.createClones(3);
 
     if (mit.game_started) {
 
-      // Draw Forks
-      mit.forks.draw(ctx, 6);
-      // Draw Branches
-      mit.branches.draw(ctx, 4);
+      // Drawin stuff
+      mit.ForkUtils.draw(ctx);
+      mit.BranchUtils.draw(ctx);
+      mit.CollectibleUtils.draw(ctx);
+      mit.Pappu.drawClones(ctx);
 
       // Check Collisions with pappu
-      mit.forks.checkCollision();
-      mit.branches.checkCollision();
+      if (!mit.Pappu.invincible) {
+        mit.ForkUtils.checkCollision();
+        mit.BranchUtils.checkCollision();
+        mit.PakiaUtils.checkCollision();
+      }
+      mit.CollectibleUtils.checkCollision();
+      mit.Pappu.checkCloneCollision();
+
+      // Send over Pakias (Enemies)
+      if (mit.score > 199)
+        mit.PakiaUtils.render(ctx);
 
       // Update score
-      score = score + 0.2;
-      ui.score_board.text(parseInt(score));
+      mit.score = mit.score += 0.4;
+      ui.score_board.text(parseInt(mit.score));
 
       // Acceleration + Gravity
       // mit.ay = mit.ay + mit.gravity;
 
       // Velocity
       if (
-        (mit.vy < v_cap && mit.ay+mit.gravity > 0) ||
-        (mit.vy > -v_cap && mit.ay+mit.gravity < 0)
+        (mit.vy < mit.v_cap && mit.ay+mit.gravity > 0) ||
+        (mit.vy > -mit.v_cap && mit.ay+mit.gravity < 0)
         ) {
 
-        //console.log(mit.ay);
+        // console.log(mit.ay);
         mit.vy += mit.ay;
         mit.vy += mit.gravity;
       }
 
       // console.log(vy, ay)
 
-      mit.pappu.x += mit.vx;
-      mit.pappu.y += mit.vy;
+      mit.Pappu.x += mit.vx;
+      mit.Pappu.y += mit.vy;
 
-      mit.pappu.draw(ctx);
+      mit.Pappu.draw(ctx);
     }
     else {
-      mit.pappu.drawStatic(ctx);
+      mit.Pappu.drawStatic(ctx);
     }
 
   }());

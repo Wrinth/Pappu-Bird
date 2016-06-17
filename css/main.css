@@ -1,10 +1,10 @@
 @font-face{
-  font-family: 'Happy Sans';
-  src: url('../fonts/happy_sans-webfont.eot');
-  src: url('../fonts/happy_sans-webfont.eot?#iefix') format('embedded-opentype'),
-       url('../fonts/happy_sans-webfont.woff') format('woff'),
-       url('../fonts/happy_sans-webfont.ttf') format('truetype'),
-       url('../fonts/happy_sans-webfont.svg#webfont') format('svg');
+	font-family: 'Happy Sans';
+	src: url('../fonts/happy_sans-webfont.eot');
+	src: url('../fonts/happy_sans-webfont.eot?#iefix') format('embedded-opentype'),
+	     url('../fonts/happy_sans-webfont.woff') format('woff'),
+	     url('../fonts/happy_sans-webfont.ttf') format('truetype'),
+	     url('../fonts/happy_sans-webfont.svg#webfont') format('svg');
 }
 
 * {
@@ -23,31 +23,50 @@ body {
   font-family: 'Happy Sans', cursive;
 }
 
+h1 {
+  text-align: center;
+  color: #fff;
+  margin-top: 20px;
+}
+
 .container {
-  position: relative;
-  margin: 50px auto;
-  width: auto;
-  max-width: 1000px;
-  height: 500px;
+	position: relative;
+	margin: 20px auto 50px;
+	width: auto;
+	max-width: 1000px;
+	height: 500px;
 }
 
 footer {
-  color: #E6E6E6;
-  margin: 50px auto;
-  max-width: 1000px;
+	font-size: 18px;
+	font-weight: normal;
+	color: #E6E6E6;
+	margin: 50px auto;
+	padding: 0 0 20px;
+	max-width: 1000px;
+}
+footer h3 {
+	margin-top: 20px;
+}
+footer p {
+	margin-bottom: 10px;
 }
 footer a {
-  color: #FF6767;
+	color: #FF6767;
+}
+footer a:visited {
+	color: #7FFF67;
 }
 footer a:hover {
-  color: #67DBFF;
+	color: #67DBFF;
 }
 footer a:active {
-  color: #F3FF67;
+	color: #F3FF67;
 }
 footer a:focus {
-  color: #FF67ED;
+	color: #FF67ED;
 }
+
 
 canvas#game_main {
   display: block;
@@ -55,26 +74,26 @@ canvas#game_main {
   position: absolute;
 }
 canvas#game_bg {
-  display: block;
-  margin: 0 auto;
-  position: absolute;
+	display: block;
+	margin: 0 auto;
+	position: absolute;
 }
 
 
 /* Score Board */
 #score_board {
-       position: absolute;
-       top: 0; left: 0; right: 0;
-       padding: 10px;
-       height: 10%;
-       text-align: right;
-       font-size: 30px;
-       font-weight: normal;
-	   
-	   -webkit-user-select: none;
-       -moz-user-select: none;
-       -o-user-select: none;
-       user-select: none;
+	position: absolute;
+	top: 0; left: 0; right: 0;
+	padding: 10px;
+	height: 10%;
+	text-align: left;
+	font-size: 30px;
+	font-weight: normal;
+
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-o-user-select: none;
+	user-select: none;
 }
 
 
@@ -86,20 +105,20 @@ canvas#game_bg {
 	height: 100%;
 	z-index: 1;
 	width: 100%;
-	
+
 	-webkit-user-select: none;
-    -moz-user-select: none;
-    -o-user-select: none;
-    user-select: none;
+	-moz-user-select: none;
+	-o-user-select: none;
+	user-select: none;
 }
 
 #title {
 	font-size: 67px;
-    line-height: 100px;
-    font-weight: normal;
+	line-height: 100px;
+	font-weight: normal;
 	color: #945430;
 	text-align: center;
-	text-shadow: 3px 3px 0px white;
+  text-shadow: 3px 3px 0px white;
 	margin: 0;
 	padding: 0;
 }
@@ -111,10 +130,9 @@ canvas#game_bg {
 	text-align: center;
 	margin: -10px 0 0;
 }
-
 #credits a {
 	color: #FFEEAA;
-    text-decoration: none;
+	text-decoration: none;
 }
 
 .options {
@@ -175,11 +193,16 @@ canvas#game_bg {
 }
 
 .controls {
-    width: 74px;
-    height: 48px;
-    background: url(../img/controls.png) no-repeat top center;
-    margin: 10px auto;
-    position: absolute;
-    top: 50%; left: 50%;
-    margin-top: -24px; margin-left: -37px;
+	width: 130px;
+	height: 48px;
+	background: url(../img/controls.png) no-repeat top center;
+	margin: 10px auto;
+	position: absolute;
+	top: 50%; left: 50%;
+	margin-top: -24px; margin-left: -60px;
+}
+
+#disqus_thread {
+    max-width: 1000px;
+    margin: 0 auto;
 }
